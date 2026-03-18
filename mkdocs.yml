@@ -1,0 +1,5 @@
+site_name: matrix-maintainer
+theme:
+  name: mkdocs
+nav:
+  - Home: README.md

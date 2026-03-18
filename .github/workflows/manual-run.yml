@@ -1,0 +1,33 @@
+name: manual-run
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: Optional repo name to check
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REPO: ${{ github.event.inputs.repo }}
+        run: |
+          if [ -n "$TARGET_REPO" ]; then
+            uv run matrix-maintainer check-repo "$TARGET_REPO"
+          else
+            uv run matrix-maintainer run-daily
+          fi
