@@ -64,28 +64,9 @@ This file defines:
 |---|---:|---|
 | `GITHUB_TOKEN` | optional | General GitHub auth |
 | `CROSS_REPO_TOKEN` | recommended | Dispatch workflows in other repos |
-| `OPENAI_API_KEY` | required in CI worker | Runs Codex in GitHub Actions |
-| `STATUS_API_URL` | optional | Worker callback endpoint for dashboard events |
 | `GITHUB_ORG` | optional | Default org override |
 | `MATRIX_CODEX_EXECUTION_MODE` | optional | `dispatch` (default) or `local` |
 | `MATRIX_CODEX_OPERATION` | optional | operation name for runs |
-
-
-### `.env` starter template
-
-```env
-GITHUB_ORG=agent-matrix
-GITHUB_BASE_BRANCH=main
-MATRIX_CODEX_EXECUTION_MODE=dispatch
-MATRIX_CODEX_OPERATION=daily-maintenance
-```
-
-For local dashboard development:
-
-```env
-BACKEND_STATUS_URL=http://127.0.0.1:8000/status
-NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8000/ws
-```
 
 ## 4. Credentials and Permissions
 
@@ -150,27 +131,6 @@ Recommended setup:
 3. Use profile metadata in `config/repositories.yml` to control safe defaults.
 4. Keep mutation operations PR-based and human-reviewed for high-risk repos.
 
-
-
-### GitHub Actions secret setup
-
-1. Go to: `Settings → Secrets and variables → Actions`.
-2. Add secrets:
-   - `OPENAI_API_KEY`
-   - `CROSS_REPO_TOKEN`
-   - `STATUS_API_URL` (optional)
-
-### Codex action usage
-
-```yaml
-- name: Codex operation
-  uses: openai/codex-action@v1
-  with:
-    api-key: ${{ secrets.OPENAI_API_KEY }}
-    prompt: >-
-      Apply operation safely, run validation, and keep changes minimal.
-```
-
 ## 8. Status Dashboard
 
 Dashboard components:
@@ -197,28 +157,6 @@ Root `Dockerfile` builds frontend and runs backend + frontend in one container.
 
 - Frontend exposed on port `7860` (Spaces-compatible)
 - Backend runs on `8000` internally
-
-
-
-### Hugging Face Space sync workflow
-
-File: `.github/workflows/sync-matrix-codex-status-to-hf-space.yml`
-
-This workflow:
-
-1. Validates `HF_TOKEN`, `HF_USERNAME`, and `SPACE_NAME` secrets.
-2. Builds a clean deploy tree containing:
-   - `apps/backend`
-   - `apps/frontend`
-   - `Dockerfile`
-   - `README.md` (from `deploy/huggingface/README.md`)
-3. Force-pushes that deploy tree to your Hugging Face Space repository.
-
-Required secrets:
-
-- `HF_TOKEN`
-- `HF_USERNAME`
-- `SPACE_NAME`
 
 ## 10. Troubleshooting
 

@@ -11,8 +11,6 @@ from typing import Any
 import httpx
 import yaml
 
-WORKER_WORKFLOW = "matrix-codex-worker.yml"
-
 
 def load_config(path: str) -> dict[str, Any]:
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
@@ -31,7 +29,7 @@ def _repo_branch(item: str | dict[str, Any], default_branch: str) -> str:
 
 
 def trigger_workflow(org: str, repo: str, operation: str, token: str, ref: str) -> dict[str, Any]:
-    url = f"https://api.github.com/repos/{org}/{repo}/actions/workflows/{WORKER_WORKFLOW}/dispatches"
+    url = f"https://api.github.com/repos/{org}/{repo}/actions/workflows/repo-maintenance-worker.yml/dispatches"
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {token}",
@@ -41,7 +39,6 @@ def trigger_workflow(org: str, repo: str, operation: str, token: str, ref: str) 
     response = httpx.post(url, headers=headers, json=payload, timeout=30.0)
     return {
         "repo": f"{org}/{repo}",
-        "workflow": WORKER_WORKFLOW,
         "status_code": response.status_code,
         "ok": response.status_code == 204,
         "response": response.text[:1000],

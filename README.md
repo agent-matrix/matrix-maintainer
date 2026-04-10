@@ -44,8 +44,7 @@ It discovers repositories, plans operations, dispatches worker runs, collects ou
 ```text
 matrix-codex/
 ├── matrix_codex/                     # Python controller package
-├── config/repositories.yml           # Repo inventory
-├── config/profiles.yml               # Validation profiles by stack
+├── config/repositories.yml           # Repo inventory + profiles
 ├── scripts/                          # Dispatch/report helper scripts
 ├── .github/workflows/                # Orchestrator + validation workflows
 ├── target-repo-template/             # Worker template for managed repos
@@ -108,7 +107,6 @@ See **docs technical guide** for complete credential setup.
 - `daily-orchestrator.yml`: scheduled daily orchestration
 - `manual-orchestrator.yml`: manual dispatch/local fallback
 - `validate-config.yml`: schema checks for inventory config
-- `rollout-worker-template.yml`: preview worker-template rollout plan
 
 ---
 
@@ -153,72 +151,3 @@ curl -X POST http://localhost:8000/event \
 
 `matrix-codex` is the primary CLI.  
 `matrix-maintainer` remains available as a compatibility alias during migration.
-
-
----
-
-## 🛠️ Automation Hardening
-
-Recent reliability upgrades included:
-
-- standardized dispatch workflow name to `matrix-codex-worker.yml`
-- worker template now uses Codex action (`openai/codex-action@v1`)
-- worker lifecycle status callbacks (`running/success/failed`) to dashboard API
-- persistent backend state at `state/runtime_status.json`
-- profile-based validation runner (`matrix_codex.execution.worker_runner`)
-
-
-## 🌍 Environment Setup (Local + GitHub)
-
-### Local `.env`
-
-Create a `.env` file in the repository root:
-
-```env
-GITHUB_ORG=agent-matrix
-GITHUB_BASE_BRANCH=main
-MATRIX_CODEX_EXECUTION_MODE=dispatch
-MATRIX_CODEX_OPERATION=daily-maintenance
-```
-
-Optional local API wiring for dashboard development:
-
-```env
-BACKEND_STATUS_URL=http://127.0.0.1:8000/status
-NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8000/ws
-```
-
-### GitHub Secrets (required for automation)
-
-Set these in **Repository** or **Organization** Secrets (`Settings → Secrets and variables → Actions`):
-
-- `OPENAI_API_KEY` → required for `openai/codex-action@v1`
-- `CROSS_REPO_TOKEN` → required for cross-repo workflow dispatch
-- `STATUS_API_URL` → optional; enables worker lifecycle callbacks to dashboard API
-
-### Codex worker step reference
-
-```yaml
-- name: Codex operation
-  uses: openai/codex-action@v1
-  with:
-    api-key: ${{ secrets.OPENAI_API_KEY }}
-    prompt: >-
-      Apply operation safely and keep diffs minimal.
-```
-
-
-## 🤗 Hugging Face Space Deployment (Backend + Frontend)
-
-This repository includes a deployment workflow for a Docker Space:
-
-- Workflow: `.github/workflows/sync-matrix-codex-status-to-hf-space.yml`
-- Space metadata template: `deploy/huggingface/README.md`
-
-### Required GitHub Secrets
-
-- `HF_TOKEN` (write access to Spaces)
-- `HF_USERNAME` (your HF username)
-- `SPACE_NAME` (target Space repo name)
-
-The workflow builds a clean deploy tree from `apps/backend`, `apps/frontend`, and `Dockerfile`, then force-pushes it to your HF Space.

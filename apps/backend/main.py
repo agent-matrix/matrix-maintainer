@@ -6,8 +6,6 @@ from typing import Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from .state_store import load_state, save_state
-
 app = FastAPI(title="matrix-codex-status")
 
 app.add_middleware(
@@ -19,7 +17,7 @@ app.add_middleware(
 )
 
 clients: list[WebSocket] = []
-STATE: dict[str, Any] = load_state()
+STATE: dict[str, Any] = {"repos": {}, "actions": []}
 
 
 @app.get("/health")
@@ -44,10 +42,9 @@ async def event(data: dict[str, Any]) -> dict[str, bool]:
         "updated": time.time(),
     }
 
-    STATE.setdefault("repos", {})[repo] = {"status": status, "updated": enriched["updated"]}
-    STATE.setdefault("actions", []).append(enriched)
-    STATE["actions"] = STATE["actions"][-500:]
-    save_state(STATE)
+    STATE["repos"][repo] = {"status": status, "updated": enriched["updated"]}
+    STATE["actions"].append(enriched)
+    STATE["actions"] = STATE["actions"][-200:]
 
     stale: list[WebSocket] = []
     for client in clients:
