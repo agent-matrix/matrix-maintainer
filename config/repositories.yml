@@ -1,0 +1,98 @@
+organization: agent-matrix
+default_branch: main
+
+repositories:
+  - name: matrix-hub
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-guardian
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-ai
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-architect
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-system
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-hub-admin
+    stack: node
+    profile: node-web
+    branch: main
+  - name: matrix-treasury
+    stack: python
+    profile: python-service
+    branch: main
+  - name: network.matrixhub
+    stack: node
+    profile: node-web
+    branch: main
+  - name: catalog
+    stack: infra
+    profile: infra
+    branch: main
+  - name: a2a-validator
+    stack: node
+    profile: node-web
+    branch: main
+  - name: matrix-python-sdk
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrix-cli
+    stack: python
+    profile: python-service
+    branch: main
+  - name: mcp_ingest
+    stack: python
+    profile: python-service
+    branch: main
+  - name: mcp-template
+    stack: infra
+    profile: infra
+    branch: main
+  - name: matrix-protocol-helper
+    stack: node
+    profile: node-web
+    branch: main
+  - name: matrix-llm
+    stack: infra
+    profile: infra
+    branch: main
+  - name: watsonx-agent-creator
+    stack: node
+    profile: node-web
+    branch: main
+  - name: matrixlink
+    stack: python
+    profile: python-service
+    branch: main
+  - name: matrixhub-db
+    stack: infra
+    profile: infra
+    branch: main
+  - name: matrix-infra
+    stack: infra
+    profile: infra
+    branch: main
+
+profiles:
+  python-service:
+    run_tests: true
+    run_lint: true
+    open_pr: true
+  node-web:
+    run_tests: true
+    run_lint: true
+    open_pr: true
+  infra:
+    run_tests: false
+    run_lint: false
+    open_pr: true

@@ -1,7 +1,7 @@
 import json
 
-from matrix_maintainer.models import RepoHealthReport
-from matrix_maintainer.site.generator import generate_site
+from matrix_codex.models import RepoHealthReport
+from matrix_codex.site.generator import generate_site
 
 def test_generate_site(temp_settings):
     latest = temp_settings.state_dir / "latest_status.json"
