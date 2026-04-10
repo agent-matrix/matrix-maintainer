@@ -1,0 +1,23 @@
+services:
+  backend:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./apps/backend:/app
+    command: bash -lc "pip install fastapi uvicorn && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: node:20
+    working_dir: /app
+    environment:
+      BACKEND_STATUS_URL: http://backend:8000/status
+      NEXT_PUBLIC_WS_URL: ws://localhost:8000/ws
+    volumes:
+      - ./apps/frontend:/app
+    command: bash -lc "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

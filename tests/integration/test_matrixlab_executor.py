@@ -1,4 +1,4 @@
-from matrix_maintainer.matrixlab.executor import execute_command
+from matrix_codex.matrixlab.executor import execute_command
 
 def test_local_executor(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)

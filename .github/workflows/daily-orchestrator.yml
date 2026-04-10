@@ -1,0 +1,47 @@
+name: matrix-codex-daily-orchestrator
+
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation name for worker runs
+        required: false
+        default: daily-maintenance
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@v3
+
+      - run: uv sync
+
+      - name: Run controller orchestration
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROSS_REPO_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+          GITHUB_ORG: agent-matrix
+          MATRIX_CODEX_EXECUTION_MODE: dispatch
+          MATRIX_CODEX_OPERATION: ${{ inputs.operation || 'daily-maintenance' }}
+        run: uv run matrix-codex run-daily
+
+      - name: Upload state artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-codex-state
+          path: |
+            state/**
+            status-site/data/**

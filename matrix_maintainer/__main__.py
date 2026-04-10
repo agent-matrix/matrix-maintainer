@@ -1,4 +1,4 @@
-from matrix_maintainer.cli import app
+from matrix_codex.__main__ import main
 
 if __name__ == "__main__":
-    app()
+    raise SystemExit(main())
