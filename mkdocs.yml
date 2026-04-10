@@ -1,5 +1,9 @@
-site_name: matrix-maintainer
+site_name: matrix-codex
+
 theme:
   name: mkdocs
+
 nav:
   - Home: README.md
+  - Technical Guide: docs/technical-guide.md
+  - Architecture: docs/architecture.md

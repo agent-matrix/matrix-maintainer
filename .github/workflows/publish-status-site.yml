@@ -2,7 +2,7 @@ name: publish-status-site
 
 on:
   workflow_run:
-    workflows: ["daily-maintenance"]
+    workflows: ["matrix-codex-daily-orchestrator"]
     types: [completed]
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
         run: uv sync
 
       - name: Build site
-        run: uv run matrix-maintainer publish-site
+        run: uv run matrix-codex publish-site
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

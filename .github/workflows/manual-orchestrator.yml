@@ -1,0 +1,46 @@
+name: matrix-codex-manual-orchestrator
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: Optional repo name to check locally
+        required: false
+        type: string
+      operation:
+        description: Operation name for dispatch mode
+        required: false
+        default: daily-maintenance
+        type: string
+      execution_mode:
+        description: dispatch or local
+        required: false
+        default: dispatch
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROSS_REPO_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+          TARGET_REPO: ${{ github.event.inputs.repo }}
+          MATRIX_CODEX_EXECUTION_MODE: ${{ github.event.inputs.execution_mode }}
+          MATRIX_CODEX_OPERATION: ${{ github.event.inputs.operation }}
+        run: |
+          if [ -n "$TARGET_REPO" ]; then
+            uv run matrix-codex check-repo "$TARGET_REPO"
+          else
+            uv run matrix-codex run-daily
+          fi

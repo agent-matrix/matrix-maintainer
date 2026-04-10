@@ -1,5 +1,5 @@
-from matrix_maintainer.models import RepoHealthReport
-from matrix_maintainer.reporting.status_builder import build_summary
+from matrix_codex.models import RepoHealthReport
+from matrix_codex.reporting.status_builder import build_summary
 
 def test_build_summary(sample_repo):
     report = RepoHealthReport(repo=sample_repo, status="healthy")

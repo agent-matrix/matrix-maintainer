@@ -1,5 +1,5 @@
 from pathlib import Path
-from matrix_maintainer.settings import get_settings
+from matrix_codex.settings import get_settings
 
 if __name__ == "__main__":
     settings = get_settings()

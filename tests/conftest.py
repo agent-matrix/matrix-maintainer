@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from matrix_maintainer.models import RepoRef
-from matrix_maintainer.settings import Settings
+from matrix_codex.models import RepoRef
+from matrix_codex.settings import Settings
 
 
 @pytest.fixture()

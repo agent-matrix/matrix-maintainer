@@ -1,4 +1,4 @@
-from matrix_maintainer.site.generator import generate_site
+from matrix_codex.site.generator import generate_site
 
 def test_publish_site_empty(temp_settings):
     generate_site(temp_settings)

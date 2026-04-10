@@ -1,0 +1,70 @@
+name: matrix-codex-worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        required: true
+        type: string
+      controller_run_id:
+        required: false
+        type: string
+      base_branch:
+        required: false
+        default: main
+        type: string
+      fix_mode:
+        required: false
+        default: safe
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  codex-maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base_branch }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create branch
+        run: |
+          BRANCH="matrix-codex/${{ inputs.operation }}-${{ github.run_id }}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          git checkout -b "$BRANCH"
+
+      - name: Run Codex wrapper
+        run: |
+          echo "TODO: replace with Codex execution wrapper"
+          echo "operation=${{ inputs.operation }} fix_mode=${{ inputs.fix_mode }}"
+
+      - name: Validate
+        run: |
+          if [ -f Makefile ]; then
+            make test || true
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git add .
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "chore: matrix-codex ${{ inputs.operation }}"
+          git push origin "$BRANCH"
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ${{ env.BRANCH }}
+          base: ${{ inputs.base_branch }}
+          title: "chore: matrix-codex ${{ inputs.operation }}"
+          body: |
+            Automated maintenance from matrix-codex.
+            Controller run: ${{ inputs.controller_run_id }}

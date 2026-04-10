@@ -1,0 +1,98 @@
+name: Repo Maintenance Worker (Template)
+
+on:
+  workflow_call:
+    inputs:
+      operation:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Git identity
+        run: |
+          git config user.name "matrix-codex-bot"
+          git config user.email "matrix-codex-bot@users.noreply.github.com"
+
+      - name: Create working branch
+        run: |
+          BRANCH="matrix-codex/${{ inputs.operation }}-${{ github.run_id }}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          git checkout -b "$BRANCH"
+
+      - name: Detect stack
+        id: stack
+        run: |
+          if [ -f package.json ]; then
+            echo "type=node" >> "$GITHUB_OUTPUT"
+          elif [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+            echo "type=python" >> "$GITHUB_OUTPUT"
+          elif [ -f go.mod ]; then
+            echo "type=go" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=generic" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.stack.outputs.type == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python
+        if: steps.stack.outputs.type == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run maintenance
+        run: |
+          echo "Operation: ${{ inputs.operation }}"
+          case "${{ inputs.operation }}" in
+            maintenance)
+              echo "Run profile defaults"
+              ;;
+            lint-fix)
+              echo "Run linter autofix"
+              ;;
+            test-only)
+              echo "Run tests only"
+              ;;
+            dependency-upgrade)
+              echo "Run dependency workflow"
+              ;;
+            security-review)
+              echo "Run security checks"
+              ;;
+            *)
+              echo "Unsupported operation: ${{ inputs.operation }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: git commit -m "chore: matrix-codex ${{ inputs.operation }}"
+
+      - name: Push branch
+        if: steps.changes.outputs.changed == 'true'
+        run: git push origin "$BRANCH"
