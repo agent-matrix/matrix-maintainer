@@ -12,9 +12,7 @@ def inventory_path(settings: Settings) -> Path:
 
 
 def save_inventory(settings: Settings, repos: list[RepoRef]) -> None:
-    path = inventory_path(settings)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
+    inventory_path(settings).write_text(
         json.dumps([repo.model_dump() for repo in repos], indent=2),
         encoding="utf-8",
     )

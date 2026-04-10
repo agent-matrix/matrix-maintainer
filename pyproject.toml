@@ -38,7 +38,7 @@ matrix-maintainer = "matrix_codex.cli:app"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["matrix_codex*", "matrix_maintainer*", "apps*", "scripts*"]
+include = ["matrix_codex*", "matrix_maintainer*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

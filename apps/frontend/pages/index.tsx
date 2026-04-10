@@ -19,13 +19,6 @@ const statusColor = (status: string): string => {
   }
 };
 
-const resolveWsUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL.trim();
-  if (typeof window === "undefined") return "ws://127.0.0.1:8000/ws";
-  const scheme = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${scheme}://${window.location.hostname}:8000/ws`;
-};
-
 export default function Home() {
   const [repos, setRepos] = useState<RepoState>({});
   const [actions, setActions] = useState<ActionEvent[]>([]);
@@ -39,7 +32,8 @@ export default function Home() {
       })
       .catch(() => undefined);
 
-    const ws = new WebSocket(resolveWsUrl());
+    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/ws").trim();
+    const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
