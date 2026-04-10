@@ -1,4 +1,4 @@
-from matrix_maintainer.standards.makefile_rules import ensure_makefile
+from matrix_codex.standards.makefile_rules import ensure_makefile
 
 def test_ensure_makefile(tmp_path):
     ok, changed = ensure_makefile(tmp_path)

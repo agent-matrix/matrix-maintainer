@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "matrix-maintainer"
+name = "matrix-codex"
 version = "0.1.0"
-description = "Daily health and standards maintainer for Agent-Matrix repositories."
+description = "Cross-repository orchestration controller powered by Matrix Codex."
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 license = {text = "Apache-2.0"}
@@ -31,13 +31,14 @@ dev = [
 ]
 
 [project.scripts]
-matrix-maintainer = "matrix_maintainer.cli:app"
+matrix-codex = "matrix_codex.cli:app"
+matrix-maintainer = "matrix_codex.cli:app"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["matrix_maintainer*"]
+include = ["matrix_codex*", "matrix_maintainer*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

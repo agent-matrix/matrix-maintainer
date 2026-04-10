@@ -1,66 +1,153 @@
-# matrix-maintainer
+# 🚀 Matrix Codex
 
-`matrix-maintainer` is the daily health and standards agent for the Agent-Matrix organization.
+> **Enterprise orchestration platform for repository maintenance at scale.**
 
-It performs four core jobs:
+`matrix-codex` is the central controller for managing maintenance across many repositories.  
+It discovers repositories, plans operations, dispatches worker runs, collects outcomes, and publishes status.
 
-1. discovers repositories in the target GitHub organization;
-2. verifies build/runtime standards (`Makefile`, `pyproject.toml`, Python 3.11, `uv`, health tests);
-3. attempts safe autofixes using GitPilot and verifies those fixes inside matrixlab-style sandboxes;
-4. publishes a static status site to GitHub Pages.
+---
 
-## Core integrations
+## ✨ What You Get
 
-- **GitPilot** is used for repository analysis, action-plan generation, and GitHub-aware patch proposals.
-- **matrixlab** is used for isolated execution of `make install`, `make test`, and `make start`.
+- 🧭 **Central Control Plane**: one place to operate all managed repositories.
+- 🤖 **Codex-Driven Operations**: reusable operation profiles for maintenance, linting, test repair, and upgrades.
+- 🔁 **Worker-Based Execution**: each target repository runs changes in its own CI context (safer, isolated).
+- 📊 **Status & Observability**: API + dashboard for repo health and action history.
+- 🧾 **Auditability**: JSON state artifacts and workflow logs for traceability.
 
-## Production goals
+---
 
-- daily scheduled scans of all repositories
-- low-risk automated PRs for missing standards
-- static JSON + HTML status dashboard
-- auditable logs and repeatable verification runs
+## 🏗️ Architecture Overview
 
-## Quick start
+`matrix-codex` follows a controller/worker model:
 
-```bash
-cp .env.example .env
-make install
-make test
-make start
+1. **Controller** (this repo)
+   - Reads repo inventory (`config/repositories.yml`)
+   - Selects operation and target repos
+   - Dispatches target worker workflows
+   - Aggregates results
+
+2. **Worker** (in each target repo)
+   - Executes operation in local repo context
+   - Runs validation/tests
+   - Commits and opens PR when needed
+
+3. **Reporter / Dashboard**
+   - Publishes status snapshots
+   - Exposes API (`/status`, `/event`, `/ws`)
+   - Renders live status UI
+
+---
+
+## 📁 Repository Structure
+
+```text
+matrix-codex/
+├── matrix_codex/                     # Python controller package
+├── config/repositories.yml           # Repo inventory + profiles
+├── scripts/                          # Dispatch/report helper scripts
+├── .github/workflows/                # Orchestrator + validation workflows
+├── target-repo-template/             # Worker template for managed repos
+├── apps/backend/                     # FastAPI status backend
+├── apps/frontend/                    # Next.js status dashboard
+├── state/                            # Status/history artifacts
+└── docs/                             # Technical documentation
 ```
 
-## Daily operation
+---
+
+## ⚙️ Quick Start
+
+### 1) Install dependencies
 
 ```bash
-matrix-maintainer run-daily
-matrix-maintainer publish-site
+uv sync
 ```
 
-## GitHub Actions
+### 2) Run key commands
 
-The repository ships with:
-- a daily scheduled maintainer workflow
-- a site publishing workflow
-- PR validation for this repository itself
+```bash
+matrix-codex discover
+matrix-codex run-daily
+matrix-codex check-repo agent-matrix/matrix-hub
+matrix-codex publish-site
+```
 
-## Environment variables
+### 3) Run local status dashboard (optional)
 
-See `.env.example`.
+```bash
+docker compose up --build
+```
 
-## Repo standards enforced
+- Frontend: `http://localhost:3000`
+- Backend status API: `http://localhost:8000/status`
 
-- `Makefile` with `install`, `test`, `start`
-- `pyproject.toml` with Python 3.11 and `uv`
-- `tests/test_health.py`
-- successful `make install`
-- successful `make test`
-- successful smoke-check of `make start`
+---
 
-## Notes
+## 🔐 Required Credentials
 
-This repository is production-oriented, but its external integrations depend on:
-- valid GitHub credentials
-- a working GitPilot installation/CLI
-- a working matrixlab installation/CLI or compatible sandbox adapter
-- repository permissions to push branches and create PRs
+For orchestration against GitHub:
+
+- `GITHUB_TOKEN` (or)
+- `CROSS_REPO_TOKEN` ✅ recommended for cross-repo dispatch
+
+Token should have access to:
+
+- repository contents
+- Actions (dispatch workflows)
+- pull requests (if opening PRs)
+
+See **docs technical guide** for complete credential setup.
+
+---
+
+## 🧪 Operational Workflows
+
+- `orchestrate-agent-matrix.yml`: dispatch operation across fleet
+- `daily-orchestrator.yml`: scheduled daily orchestration
+- `manual-orchestrator.yml`: manual dispatch/local fallback
+- `validate-config.yml`: schema checks for inventory config
+
+---
+
+## 📡 Status Dashboard API
+
+FastAPI backend (`apps/backend/main.py`) exposes:
+
+- `GET /health`
+- `GET /status`
+- `POST /event`
+- `WS /ws`
+
+Example event:
+
+```bash
+curl -X POST http://localhost:8000/event \
+  -H "Content-Type: application/json" \
+  -d '{"repo":"matrix-ai","status":"running"}'
+```
+
+---
+
+## 🧰 Best Practices
+
+- ✅ Keep controller logic centralized, execution decentralized.
+- ✅ Prefer PR-based changes over direct pushes.
+- ✅ Use per-repo profiles for safe defaults.
+- ✅ Roll out to pilot repos first, then scale.
+- ✅ Track every run with artifacts and dashboard history.
+
+---
+
+## 📚 Documentation
+
+- **Technical guide**: `docs/technical-guide.md`
+- Architecture notes: `docs/architecture.md`
+- Governance and operations docs: `docs/`
+
+---
+
+## 🤝 Compatibility
+
+`matrix-codex` is the primary CLI.  
+`matrix-maintainer` remains available as a compatibility alias during migration.

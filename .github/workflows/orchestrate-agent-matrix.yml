@@ -1,0 +1,66 @@
+name: Matrix Codex Orchestrator
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation to run across repositories
+        required: true
+        default: maintenance
+        type: choice
+        options:
+          - maintenance
+          - lint-fix
+          - test-only
+          - dependency-upgrade
+          - security-review
+      target_repo:
+        description: Optional single repo name. Leave empty to run all.
+        required: false
+        type: string
+  schedule:
+    - cron: "0 3 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout matrix-codex
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml httpx
+
+      - name: Trigger target repositories
+        env:
+          GH_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+          OPERATION: ${{ inputs.operation || 'maintenance' }}
+          TARGET_REPO: ${{ inputs.target_repo || '' }}
+        run: |
+          python scripts/trigger_repos.py \
+            --config config/repositories.yml \
+            --operation "$OPERATION" \
+            ${TARGET_REPO:+--target-repo "$TARGET_REPO"}
+
+      - name: Build orchestration summary
+        if: always()
+        run: python scripts/summarize_results.py
+
+      - name: Upload trigger summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchestration-summary
+          path: |
+            orchestration-results.json
+            orchestration-summary.json

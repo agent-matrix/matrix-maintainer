@@ -1,4 +1,4 @@
-from matrix_maintainer.standards.pyproject_rules import ensure_pyproject
+from matrix_codex.standards.pyproject_rules import ensure_pyproject
 
 def test_ensure_pyproject(tmp_path):
     ok, changed = ensure_pyproject(tmp_path, "demo")
