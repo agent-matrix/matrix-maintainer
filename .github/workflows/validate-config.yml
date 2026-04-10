@@ -1,0 +1,44 @@
+name: Validate Matrix Codex Config
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install YAML tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Validate repositories config
+        run: |
+          python - <<'PY'
+          import yaml
+          from pathlib import Path
+
+          path = Path('config/repositories.yml')
+          data = yaml.safe_load(path.read_text())
+          assert 'organization' in data
+          assert 'repositories' in data and isinstance(data['repositories'], list)
+          assert len(data['repositories']) > 0
+
+          for repo in data['repositories']:
+            if isinstance(repo, str):
+              continue
+            assert 'name' in repo
+            assert 'profile' in repo
+          print('Configuration is valid.')
+          PY

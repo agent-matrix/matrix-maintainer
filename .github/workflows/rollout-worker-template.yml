@@ -1,0 +1,20 @@
+name: rollout-worker-template
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview-rollout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: python -m pip install pyyaml
+      - name: Print rollout plan
+        run: python scripts/rollout_worker_template.py --config config/repositories.yml

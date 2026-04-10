@@ -1,4 +1,4 @@
-from matrix_maintainer.standards.health_test_rules import ensure_health_test
+from matrix_codex.standards.health_test_rules import ensure_health_test
 
 def test_ensure_health_test(tmp_path):
     ok, changed = ensure_health_test(tmp_path)
