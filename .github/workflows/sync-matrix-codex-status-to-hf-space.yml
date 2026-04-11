@@ -9,6 +9,9 @@ on:
       - "deploy/huggingface/**"
   workflow_dispatch: {}
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   sync-to-hub:
     name: Deploy to HF Spaces
@@ -26,16 +29,19 @@ jobs:
           fetch-depth: 0
 
       - name: Validate secrets
+        id: validate
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           if [ -z "$HF_USERNAME" ] || [ -z "$SPACE_NAME" ] || [ -z "$HF_TOKEN" ]; then
-            echo "Missing required secrets."
-            echo "Required: HF_TOKEN, HF_USERNAME, SPACE_NAME"
-            exit 1
+            echo "Missing required secrets. Required: HF_TOKEN, HF_USERNAME, SPACE_NAME"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build deploy tree
+        if: steps.validate.outputs.ready == 'true'
         run: |
           set -e
           DEPLOY_DIR=$(mktemp -d)
@@ -56,6 +62,7 @@ jobs:
           test -f "$DEPLOY_DIR/apps/backend/main.py"
 
       - name: Push deploy tree to HF Space
+        if: steps.validate.outputs.ready == 'true'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
