@@ -6,93 +6,64 @@ repositories:
     stack: python
     profile: python-service
     branch: main
+    tasks: [repair_tests, repair_lint, update_dependencies]
+    risk: medium
   - name: matrix-guardian
     stack: python
     profile: python-service
     branch: main
+    tasks: [repair_tests, update_dependencies]
+    risk: high
   - name: matrix-ai
     stack: python
     profile: python-service
     branch: main
+    tasks: [repair_tests, repair_lint, update_dependencies]
+    risk: medium
   - name: matrix-architect
     stack: python
     profile: python-service
     branch: main
+    tasks: [repair_tests, repair_lint]
+    risk: medium
   - name: matrix-system
     stack: python
     profile: python-service
     branch: main
+    tasks: [repair_tests, update_dependencies]
+    risk: medium
   - name: matrix-hub-admin
     stack: node
     profile: node-web
     branch: main
+    tasks: [repair_lint, update_dependencies]
+    risk: medium
   - name: matrix-treasury
     stack: python
     profile: python-service
     branch: main
-  - name: network.matrixhub
-    stack: node
-    profile: node-web
-    branch: main
-  - name: catalog
-    stack: infra
-    profile: infra
-    branch: main
-  - name: a2a-validator
-    stack: node
-    profile: node-web
-    branch: main
-  - name: matrix-python-sdk
-    stack: python
-    profile: python-service
-    branch: main
-  - name: matrix-cli
-    stack: python
-    profile: python-service
-    branch: main
-  - name: mcp_ingest
-    stack: python
-    profile: python-service
-    branch: main
-  - name: mcp-template
-    stack: infra
-    profile: infra
-    branch: main
-  - name: matrix-protocol-helper
-    stack: node
-    profile: node-web
-    branch: main
-  - name: matrix-llm
-    stack: infra
-    profile: infra
-    branch: main
-  - name: watsonx-agent-creator
-    stack: node
-    profile: node-web
-    branch: main
-  - name: matrixlink
-    stack: python
-    profile: python-service
-    branch: main
-  - name: matrixhub-db
-    stack: infra
-    profile: infra
-    branch: main
-  - name: matrix-infra
-    stack: infra
-    profile: infra
-    branch: main
+    tasks: [repair_tests, update_dependencies]
+    risk: high
 
 profiles:
   python-service:
     run_tests: true
     run_lint: true
     open_pr: true
+    install: "python -m pip install -r requirements.txt"
+    test: "pytest"
+    lint: "ruff check ."
   node-web:
     run_tests: true
     run_lint: true
     open_pr: true
+    install: "npm ci"
+    test: "npm test -- --runInBand"
+    lint: "npm run lint"
   infra:
     run_tests: false
     run_lint: false
     open_pr: true
+    install: "echo infra profile"
+    test: "echo skip tests"
+    lint: "echo skip lint"

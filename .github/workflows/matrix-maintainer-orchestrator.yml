@@ -1,0 +1,20 @@
+name: Matrix Maintainer Orchestrator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - run: matrix-codex scan-health
+      - run: matrix-codex plan-maintenance
+      - run: matrix-codex run-maintenance
+      - run: matrix-codex report-status

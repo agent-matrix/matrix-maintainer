@@ -39,12 +39,33 @@ It discovers repositories, plans operations, dispatches worker runs, collects ou
 
 ---
 
+
+## 🧠 Matrix Maintainer Foundation
+
+This repository now also ships a `matrix-maintainer` foundation under `app/` with:
+
+- FastAPI service (`app/main.py`)
+- SQLAlchemy models for repositories/runs/events (`app/db/models.py`)
+- Dispatch + scheduler loop (`app/control/dispatcher.py`, `app/control/scheduler.py`)
+- Pluggable agents (Codex, GitPilot, Ollama) (`app/agents/`)
+- Guardian/Treasury adapters for policy and budget enforcement (`app/policy`, `app/economy`)
+
+Run locally:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
 ## 📁 Repository Structure
 
 ```text
 matrix-codex/
 ├── matrix_codex/                     # Python controller package
-├── config/repositories.yml           # Repo inventory + profiles
+├── app/                              # Matrix Maintainer API/control-plane foundation
+├── config/repositories.yml           # Legacy inventory for matrix-codex
+├── config/repos.yml                  # Matrix Maintainer repo inventory
+├── config/policies.yml               # Matrix Maintainer guardrails
 ├── scripts/                          # Dispatch/report helper scripts
 ├── .github/workflows/                # Orchestrator + validation workflows
 ├── target-repo-template/             # Worker template for managed repos
@@ -143,6 +164,7 @@ curl -X POST http://localhost:8000/event \
 
 - **Technical guide**: `docs/technical-guide.md`
 - Architecture notes: `docs/architecture.md`
+- AI maintainer guide: `docs/ai-maintainer-guide.md`
 - Governance and operations docs: `docs/`
 
 ---
