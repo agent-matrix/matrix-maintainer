@@ -22,6 +22,7 @@ dependencies = [
   "rich>=13.7.1",
   "tenacity>=8.5.0",
   "packaging>=24.1",
+  "fastapi>=0.116.0",
 ]
 
 [project.optional-dependencies]

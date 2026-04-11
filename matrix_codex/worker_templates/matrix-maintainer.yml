@@ -1,0 +1,22 @@
+name: Matrix Maintainer Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        required: true
+        type: string
+      task_json:
+        required: true
+        type: string
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - run: matrix-codex run-maintenance --task-json '${{ inputs.task_json }}'
