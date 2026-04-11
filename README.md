@@ -1,131 +1,156 @@
-# Matrix Codex <img src="status-site/assets/logo.svg" alt="Matrix Codex" width="30" />
+# Matrix Codex <img src="status-site/assets/logo.svg" alt="Matrix Codex logo" width="28" />
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/GitHub%20Actions-Orchestration-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions" />
-  <img src="https://img.shields.io/badge/Architecture-Controller%20%2B%20Workers-6f42c1" alt="Architecture" />
-  <img src="https://img.shields.io/badge/License-Apache--2.0-brightgreen" alt="License" />
-</p>
+<div align="left">
 
-> **Autonomous maintenance control plane for multi-repository engineering systems.**
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automation-2088FF?logo=githubactions&logoColor=white)
+![Status](https://img.shields.io/badge/Mode-Controller%20%2B%20Workers-6f42c1)
+![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen)
 
-Matrix Codex is designed to keep repositories healthy with a governed loop:
-**discover → scan → plan → approve → execute → verify → report**.
+</div>
 
----
-
-## 🚀 Why Matrix Codex
-
-- ✅ **Scalable maintenance** across many repositories.
-- ✅ **Safe by default** with policy + approval + PR-first boundaries.
-- ✅ **Agent-ready** architecture for Codex/GitPilot/Ollama-style executors.
-- ✅ **Observable** via status APIs, state snapshots, and dashboard artifacts.
-- ✅ **Extensible** task engine and profile-based command system.
+**Matrix Codex** is an autonomous repository-maintenance control plane for the Agent‑Matrix ecosystem.
+It scans repo health, plans maintenance work, applies governance and budget checks, dispatches worker runs, and publishes status artifacts.
 
 ---
 
-## 🧠 System architecture (improved)
+## ✨ What this project does
+
+- 🧭 **Discovers repositories** and keeps an inventory.
+- 🩺 **Scans health signals** (CI/test/dependency/lint indicators).
+- 🧠 **Builds maintenance tasks** from issues with policy-aware defaults.
+- 🛡️ **Applies governance checks** (risk, allowed paths, PR-only boundaries).
+- 🚀 **Dispatches worker workflows** into target repositories.
+- 📊 **Persists and reports outcomes** through APIs + static status site.
+
+---
+
+## 🧩 How it works (simple diagram)
 
 ```mermaid
-flowchart TB
-    subgraph Inputs["📥 Inputs"]
-      A1[Repository Inventory\nconfig/repositories.yml]
-      A2[Policies\nconfig/policies.yml]
-      A3[Task Rules\nconfig/tasks.yml]
-    end
-
-    subgraph ControlPlane["🧭 Matrix Codex Control Plane"]
-      B1[🩺 Health Scanner]
-      B2[🧩 Task Engine]
-      B3[🛡️ Guardian + 💰 Treasury Checks]
-      B4[🚀 Dispatcher]
-      B5[🗃️ StorageDB\nRuns / Tasks / Events]
-    end
-
-    subgraph Workers["🛠️ Repo Workers (GitHub Actions)"]
-      C1[GitPilot / Codex / Ollama Agents]
-      C2[Install • Lint • Test • Fix]
-      C3[PR Creation / Update]
-    end
-
-    subgraph Outputs["📊 Outputs"]
-      D1[Status API /maintainer/*]
-      D2[Dashboard + Static Site]
-      D3[Audit Trail in state/]
-    end
-
-    A1 --> B1
-    A2 --> B3
-    A3 --> B2
-    B1 --> B2 --> B3 --> B4
-    B4 --> C1 --> C2 --> C3
-    C2 --> B5
-    C3 --> B5
-    B5 --> D1 --> D2
-    B5 --> D3
+flowchart LR
+    A[Repository Inventory] --> B[Health Scanner]
+    B --> C[Task Engine]
+    C --> D[Guardian + Treasury checks]
+    D --> E[GitPilot/Worker Dispatch]
+    E --> F[Events + Run Storage]
+    F --> G[Status API + Dashboard]
 ```
 
-### Loop in one sentence
-Matrix Codex scans health issues, converts them into constrained tasks, checks safety/budget, dispatches repo-local workers, and records outcomes for continuous improvement.
+### Runtime loop
 
----
+1. `scan-health`
+2. `plan-maintenance`
+3. `run-maintenance`
+4. `report-status`
 
-## 📦 Repository map
-
-### Core controller
-- `matrix_codex/main.py` → orchestration loop (`scan`, `plan`, `run`, `report`)
-- `matrix_codex/health_scanner.py` → issue detection
-- `matrix_codex/task_engine.py` → issue-to-task mapping
-- `matrix_codex/orchestration/dispatcher.py` → cross-repo workflow dispatch
-- `matrix_codex/storage/models.py` → run/task/event persistence
+The scheduled orchestrator executes this same sequence daily.
 
 ### API + status
 - `apps/backend/main.py` → backend status/event service
 - `matrix_codex/api/routes.py` → maintainer API (`/maintainer/runs`, `/tasks`, `/events`, `/health_scans`)
 
-### Worker orchestration
-- `.github/workflows/matrix-maintainer-orchestrator.yml` → scheduled controller run
-- `matrix_codex/worker_templates/matrix-maintainer.yml` → target repo worker template
+
+## 🧠 Matrix Maintainer Foundation
+
+This repository now also ships a `matrix-maintainer` foundation under `app/` with:
+
+- FastAPI service (`app/main.py`)
+- SQLAlchemy models for repositories/runs/events (`app/db/models.py`)
+- Dispatch + scheduler loop (`app/control/dispatcher.py`, `app/control/scheduler.py`)
+- Pluggable agents (Codex, GitPilot, Ollama) (`app/agents/`)
+- Guardian/Treasury adapters for policy and budget enforcement (`app/policy`, `app/economy`)
+
+Run locally:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+## 📁 Repository Structure
+
+```text
+matrix-codex/
+├── matrix_codex/                     # Python controller package
+├── app/                              # Matrix Maintainer API/control-plane foundation
+├── config/repositories.yml           # Legacy inventory for matrix-codex
+├── config/repos.yml                  # Matrix Maintainer repo inventory
+├── config/policies.yml               # Matrix Maintainer guardrails
+├── scripts/                          # Dispatch/report helper scripts
+├── .github/workflows/                # Orchestrator + validation workflows
+├── target-repo-template/             # Worker template for managed repos
+├── apps/backend/                     # FastAPI status backend
+├── apps/frontend/                    # Next.js status dashboard
+├── state/                            # Status/history artifacts
+└── docs/                             # Technical documentation
+```
+
+### Controller plane (this repository)
+
+- `matrix_codex/health_scanner.py` — detection engine
+- `matrix_codex/task_engine.py` — issue → task mapping
+- `matrix_codex/main.py` — orchestration loop
+- `matrix_codex/orchestration/dispatcher.py` — cross-repo workflow dispatch
+- `matrix_codex/storage/models.py` — persistent run/task/event storage
+
+### Service & API
+
+- `apps/backend/main.py` — status/event backend
+- `matrix_codex/api/routes.py` — maintainer API routes (`/maintainer/*`)
+
+### Worker side
+
+- `.github/workflows/matrix-maintainer-orchestrator.yml` — controller scheduler
+- `matrix_codex/worker_templates/matrix-maintainer.yml` — target repo worker template
 
 ---
 
 ## ⚙️ Installation
 
+### Option A — recommended
+
 ```bash
 make install
 ```
 
-Fallback:
+### Option B — direct
 
 ```bash
 uv sync
 ```
 
-If your environment blocks external package download, use pre-installed dependencies and run commands with `PYTHONPATH=.`.
+> If your environment blocks external network access, dependency fetch may fail. In that case use the preinstalled environment and run local commands with `PYTHONPATH=.`.
 
 ---
 
 ## 🔐 Configuration
 
-Edit these files first:
+Main configuration files:
 
-- `config/repositories.yml` → repositories, profiles, commands
-- `config/policies.yml` → risk and path restrictions
-- `config/tasks.yml` → issue→task behavior per repo
+- `config/repositories.yml` → repo catalog + execution profiles
+- `config/policies.yml` → safety boundaries and risk thresholds
+- `config/tasks.yml` → health issue → maintenance task behavior
 
-Common environment variables:
+Useful environment variables:
 
-- `GITHUB_TOKEN`, `CROSS_REPO_TOKEN`
+- `GITHUB_TOKEN` / `CROSS_REPO_TOKEN`
 - `WORKER_WORKFLOW_FILE`
-- `GITPILOT_MODE`, `GITPILOT_PROVIDER`
 - `MATRIX_CODEX_EXECUTION_MODE`
+- `GITPILOT_MODE`, `GITPILOT_PROVIDER`
 
 ---
 
-## 🧪 Usage
+## 🚀 Usage
 
-### End-to-end manual run
+### Daily automation
+
+```bash
+make run-daily
+```
+
+### Manual step-by-step
 
 ```bash
 matrix-codex scan-health
@@ -134,13 +159,7 @@ matrix-codex run-maintenance
 matrix-codex report-status
 ```
 
-### Full daily run
-
-```bash
-make run-daily
-```
-
-### Tests
+### Local checks
 
 ```bash
 make test
@@ -148,48 +167,32 @@ make test
 
 ---
 
-## 🤖 Compatibility status (verified from repo implementation)
+## 🧪 Developer commands
 
-| Platform | Status | Notes |
-|---|---|---|
-| **Ollama** | 🟡 Partial | `app/agents/ollama_agent.py` exists but currently returns `not_implemented` placeholder. |
-| **OllamaBridge** | 🟡 Planned | No dedicated `ollamabridge` adapter currently present in codebase; add bridge client module to enable runtime integration. |
-| **Hugging Face Spaces** | 🟢 Supported | Workflow `.github/workflows/sync-matrix-codex-status-to-hf-space.yml` deploys backend/frontend bundle to HF Space. |
-
-For details and rollout checklist, see `docs/compatibility.md`.
-
----
-
-## 📡 API endpoints
-
-- `GET /health`
-- `GET /status`
-- `POST /event`
-- `WS /ws`
-- `GET /maintainer/runs`
-- `GET /maintainer/tasks`
-- `GET /maintainer/events`
-- `GET /maintainer/health_scans`
+```bash
+make install
+make test
+make lint
+make build-site
+```
 
 ---
 
-## 📚 Documentation
+## 📡 Status and observability
 
-- `docs/technical-guide.md` — technical setup and internals
-- `docs/architecture.md` — architecture notes
-- `docs/ai-maintainer-guide.md` — AI handoff and extension guide
-- `docs/usage.md` — quick usage walkthrough
-- `docs/compatibility.md` — Ollama / OllamaBridge / Hugging Face compatibility matrix
+- API health: `GET /health`
+- Controller status: `GET /status`
+- Maintainer records: `/maintainer/runs`, `/maintainer/tasks`, `/maintainer/events`, `/maintainer/health_scans`
+- WebSocket stream: `WS /ws`
 
 ---
 
 ## 🧰 Best practices for maintainability
 
-1. Keep tasks small and policy-safe.
-2. Prefer PR-only automation.
-3. Add tests for every new scanner/task rule.
-4. Keep profile commands explicit and reproducible.
-5. Record failures clearly in event payloads and PR notes.
+- **Technical guide**: `docs/technical-guide.md`
+- Architecture notes: `docs/architecture.md`
+- AI maintainer guide: `docs/ai-maintainer-guide.md`
+- Governance and operations docs: `docs/`
 
 ---
 
