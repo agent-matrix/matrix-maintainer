@@ -47,7 +47,9 @@ flowchart LR
 
 The scheduled orchestrator executes this same sequence daily.
 
----
+### API + status
+- `apps/backend/main.py` → backend status/event service
+- `matrix_codex/api/routes.py` → maintainer API (`/maintainer/runs`, `/tasks`, `/events`, `/health_scans`)
 
 
 ## 🧠 Matrix Maintainer Foundation
@@ -185,7 +187,7 @@ make build-site
 
 ---
 
-## 📚 Documentation
+## 🧰 Best practices for maintainability
 
 - **Technical guide**: `docs/technical-guide.md`
 - Architecture notes: `docs/architecture.md`
