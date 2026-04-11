@@ -32,13 +32,12 @@ dev = [
 
 [project.scripts]
 matrix-codex = "matrix_codex.cli:app"
-matrix-maintainer = "matrix_codex.cli:app"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["matrix_codex*", "matrix_maintainer*"]
+include = ["matrix_codex*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

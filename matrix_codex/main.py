@@ -45,6 +45,7 @@ def dispatch_single_repo(repo: RepoRef, settings: Settings, operation: str, cont
         settings=patched,
         repo_full_name=repo.full_name,
         operation=operation,
+        base_branch=repo.default_branch,
         controller_run_id=controller_run_id,
     )
     report.dispatch_ok = result.ok
@@ -52,7 +53,7 @@ def dispatch_single_repo(repo: RepoRef, settings: Settings, operation: str, cont
     if result.error:
         report.notes.append(result.error)
     if result.ok:
-        report.status = "degraded"
+        report.status = "unknown"
         report.notes.append("dispatch_ok")
     else:
         report.finalize_status()
@@ -60,6 +61,7 @@ def dispatch_single_repo(repo: RepoRef, settings: Settings, operation: str, cont
 
 
 def run_daily(settings: Settings) -> list[RepoHealthReport]:
+    settings.ensure_directories()
     discovery = GitHubOrgDiscovery(settings)
     repos = [repo for repo in discovery.list_repositories() if include_repo(repo)]
     save_inventory(settings, repos)

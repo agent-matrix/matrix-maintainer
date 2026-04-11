@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     cross_repo_token: str | None = Field(default=None, alias="CROSS_REPO_TOKEN")
     github_org: str = Field(default="agent-matrix", alias="GITHUB_ORG")
     github_base_branch: str = Field(default="main", alias="GITHUB_BASE_BRANCH")
+    worker_workflow_file: str = Field(default="repo-maintenance-worker.yml", alias="WORKER_WORKFLOW_FILE")
 
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     work_dir: Path = Field(default=Path("work"), alias="WORK_DIR")
@@ -52,4 +53,3 @@ def get_settings() -> Settings:
     settings = Settings()
     settings.ensure_directories()
     return settings
-
