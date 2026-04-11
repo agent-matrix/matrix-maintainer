@@ -149,5 +149,4 @@ curl -X POST http://localhost:8000/event \
 
 ## 🤝 Compatibility
 
-`matrix-codex` is the primary CLI.  
-`matrix-maintainer` remains available as a compatibility alias during migration.
+`matrix-codex` is the supported CLI package and command name.

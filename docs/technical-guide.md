@@ -177,4 +177,4 @@ Root `Dockerfile` builds frontend and runs backend + frontend in one container.
 ## 11. Migration Notes
 
 - `matrix-codex` is the canonical package and CLI.
-- `matrix-maintainer` alias remains for compatibility during migration.
+- Legacy `matrix-maintainer` package shims were removed; use `matrix-codex` in scripts and automation.
