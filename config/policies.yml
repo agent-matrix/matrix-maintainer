@@ -1,0 +1,9 @@
+policies:
+  default:
+    max_files: 10
+    allowed_paths:
+      - tests/**
+      - requirements.txt
+      - pyproject.toml
+    require_pr: true
+    forbid_direct_main_push: true

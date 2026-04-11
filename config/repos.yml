@@ -1,0 +1,13 @@
+repositories:
+  - name: agent-matrix/matrix-ai
+    default_branch: main
+    profile: python-service
+  - name: agent-matrix/matrix-guardian
+    default_branch: main
+    profile: governance
+  - name: agent-matrix/matrix-architect
+    default_branch: main
+    profile: orchestration
+  - name: agent-matrix/matrix-system
+    default_branch: main
+    profile: frontend
