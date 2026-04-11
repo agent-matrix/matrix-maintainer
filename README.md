@@ -164,6 +164,7 @@ curl -X POST http://localhost:8000/event \
 
 - **Technical guide**: `docs/technical-guide.md`
 - Architecture notes: `docs/architecture.md`
+- AI maintainer guide: `docs/ai-maintainer-guide.md`
 - Governance and operations docs: `docs/`
 
 ---

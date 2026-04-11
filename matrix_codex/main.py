@@ -134,6 +134,8 @@ def run_daily(settings: Settings) -> list[RepoHealthReport]:
     discovery = GitHubOrgDiscovery(settings)
     repos = [repo for repo in discovery.list_repositories() if include_repo(repo)]
     save_inventory(settings, repos)
+    if not repos:
+        return []
 
     controller_run_id = os.getenv("GITHUB_RUN_ID", str(uuid4()))
     issues = scan_health(settings)
