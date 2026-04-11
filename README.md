@@ -49,7 +49,41 @@ The scheduled orchestrator executes this same sequence daily.
 
 ---
 
-## 🏗️ Architecture overview
+
+## 🧠 Matrix Maintainer Foundation
+
+This repository now also ships a `matrix-maintainer` foundation under `app/` with:
+
+- FastAPI service (`app/main.py`)
+- SQLAlchemy models for repositories/runs/events (`app/db/models.py`)
+- Dispatch + scheduler loop (`app/control/dispatcher.py`, `app/control/scheduler.py`)
+- Pluggable agents (Codex, GitPilot, Ollama) (`app/agents/`)
+- Guardian/Treasury adapters for policy and budget enforcement (`app/policy`, `app/economy`)
+
+Run locally:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+## 📁 Repository Structure
+
+```text
+matrix-codex/
+├── matrix_codex/                     # Python controller package
+├── app/                              # Matrix Maintainer API/control-plane foundation
+├── config/repositories.yml           # Legacy inventory for matrix-codex
+├── config/repos.yml                  # Matrix Maintainer repo inventory
+├── config/policies.yml               # Matrix Maintainer guardrails
+├── scripts/                          # Dispatch/report helper scripts
+├── .github/workflows/                # Orchestrator + validation workflows
+├── target-repo-template/             # Worker template for managed repos
+├── apps/backend/                     # FastAPI status backend
+├── apps/frontend/                    # Next.js status dashboard
+├── state/                            # Status/history artifacts
+└── docs/                             # Technical documentation
+```
 
 ### Controller plane (this repository)
 
@@ -153,19 +187,10 @@ make build-site
 
 ## 📚 Documentation
 
-- `docs/technical-guide.md` — technical setup and internals
-- `docs/architecture.md` — architecture details
-- `docs/ai-maintainer-guide.md` — AI handoff + maintenance playbook
-- `docs/usage.md` — quick usage guide
-
----
-
-## 🤝 Contributing
-
-1. Create a branch.
-2. Keep changes small and policy-safe.
-3. Run tests and include results in PR notes.
-4. Never push directly to `main`.
+- **Technical guide**: `docs/technical-guide.md`
+- Architecture notes: `docs/architecture.md`
+- AI maintainer guide: `docs/ai-maintainer-guide.md`
+- Governance and operations docs: `docs/`
 
 ---
 
