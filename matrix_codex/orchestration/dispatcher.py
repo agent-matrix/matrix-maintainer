@@ -14,22 +14,31 @@ class DispatchResult:
     error: str | None = None
 
 
-def dispatch_worker_workflow(*, settings: Settings, repo_full_name: str, operation: str, controller_run_id: str | None = None) -> DispatchResult:
+def dispatch_worker_workflow(
+    *,
+    settings: Settings,
+    repo_full_name: str,
+    operation: str,
+    base_branch: str | None = None,
+    controller_run_id: str | None = None,
+) -> DispatchResult:
     if not settings.github_token:
         return DispatchResult(ok=False, error="missing_github_token")
 
-    url = f"https://api.github.com/repos/{repo_full_name}/actions/workflows/matrix-codex-worker.yml/dispatches"
+    workflow_file = settings.worker_workflow_file
+    url = f"https://api.github.com/repos/{repo_full_name}/actions/workflows/{workflow_file}/dispatches"
     headers = {
         "Authorization": f"Bearer {settings.github_token}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
+    dispatch_ref = base_branch or settings.github_base_branch
     payload = {
-        "ref": settings.github_base_branch,
+        "ref": dispatch_ref,
         "inputs": {
             "operation": operation,
             "controller_run_id": controller_run_id or "",
-            "base_branch": settings.github_base_branch,
+            "base_branch": dispatch_ref,
         },
     }
     resp = httpx.post(url, headers=headers, json=payload, timeout=30.0)

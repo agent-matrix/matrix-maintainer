@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from github import Github
-
 from matrix_codex.models import RepoRef
 from matrix_codex.settings import Settings
 
@@ -9,6 +7,10 @@ from matrix_codex.settings import Settings
 class GitHubOrgDiscovery:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        try:
+            from github import Github
+        except ModuleNotFoundError as exc:  # pragma: no cover - depends on optional runtime deps
+            raise RuntimeError("PyGithub is required for GitHub org discovery. Install dependencies with `make install`.") from exc
         self.client = Github(settings.github_token) if settings.github_token else Github()
 
     def list_repositories(self) -> list[RepoRef]:

@@ -6,6 +6,9 @@ on:
     types: [completed]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: write
   pages: write
@@ -33,14 +36,37 @@ jobs:
       - name: Build site
         run: uv run matrix-codex publish-site
 
+      - name: Detect Pages enablement
+        id: pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              core.setOutput("enabled", "true");
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning("GitHub Pages is not enabled for this repository. Skipping deploy.");
+                core.setOutput("enabled", "false");
+                return;
+              }
+              throw error;
+            }
+
       - name: Configure Pages
+        if: steps.pages.outputs.enabled == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: steps.pages.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: status-site
 
       - name: Deploy to GitHub Pages
+        if: steps.pages.outputs.enabled == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

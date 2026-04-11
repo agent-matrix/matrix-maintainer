@@ -7,6 +7,9 @@ on:
         required: true
         type: string
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: write
   pull-requests: write
@@ -91,7 +94,8 @@ jobs:
 
       - name: Commit changes
         if: steps.changes.outputs.changed == 'true'
-        run: git commit -m "chore: matrix-codex ${{ inputs.operation }}"
+        run: |
+          git commit -m "chore: matrix-codex ${{ inputs.operation }}"
 
       - name: Push branch
         if: steps.changes.outputs.changed == 'true'
