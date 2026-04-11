@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 
 import httpx
 
+from matrix_codex.models import MaintenanceTask
 from matrix_codex.settings import Settings
 
 
@@ -21,6 +23,7 @@ def dispatch_worker_workflow(
     operation: str,
     base_branch: str | None = None,
     controller_run_id: str | None = None,
+    task: MaintenanceTask | None = None,
 ) -> DispatchResult:
     if not settings.github_token:
         return DispatchResult(ok=False, error="missing_github_token")
@@ -39,6 +42,8 @@ def dispatch_worker_workflow(
             "operation": operation,
             "controller_run_id": controller_run_id or "",
             "base_branch": dispatch_ref,
+            "run_id": controller_run_id or "",
+            "task_json": json.dumps(task.model_dump(mode="json") if task else {}),
         },
     }
     resp = httpx.post(url, headers=headers, json=payload, timeout=30.0)

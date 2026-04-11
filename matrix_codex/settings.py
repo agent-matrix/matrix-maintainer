@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     cross_repo_token: str | None = Field(default=None, alias="CROSS_REPO_TOKEN")
     github_org: str = Field(default="agent-matrix", alias="GITHUB_ORG")
     github_base_branch: str = Field(default="main", alias="GITHUB_BASE_BRANCH")
-    worker_workflow_file: str = Field(default="repo-maintenance-worker.yml", alias="WORKER_WORKFLOW_FILE")
+    worker_workflow_file: str = Field(default="matrix-maintainer.yml", alias="WORKER_WORKFLOW_FILE")
 
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     work_dir: Path = Field(default=Path("work"), alias="WORK_DIR")
@@ -28,10 +28,19 @@ class Settings(BaseSettings):
     gitpilot_bin: str = Field(default="gitpilot", alias="GITPILOT_BIN")
     gitpilot_enabled: bool = Field(default=True, alias="GITPILOT_ENABLED")
     gitpilot_message_model: str | None = Field(default=None, alias="GITPILOT_MESSAGE_MODEL")
+    gitpilot_mode: str = Field(default="auto", alias="GITPILOT_MODE")
+    gitpilot_provider: str = Field(default="openai", alias="GITPILOT_PROVIDER")
 
     matrixlab_bin: str = Field(default="matrixlab", alias="MATRIXLAB_BIN")
     matrixlab_enabled: bool = Field(default=True, alias="MATRIXLAB_ENABLED")
     matrixlab_fallback_local: bool = Field(default=True, alias="MATRIXLAB_FALLBACK_LOCAL")
+
+    matrix_ai_endpoint: str = Field(default="http://matrix-ai.internal/plan", alias="MATRIX_AI_ENDPOINT")
+    matrix_guardian_endpoint: str = Field(default="http://matrix-guardian.internal/approve", alias="MATRIX_GUARDIAN_ENDPOINT")
+    matrix_treasury_endpoint: str = Field(default="http://matrix-treasury.internal/budget", alias="MATRIX_TREASURY_ENDPOINT")
+    matrix_hub_endpoint: str = Field(default="http://matrix-hub.internal/events", alias="MATRIX_HUB_ENDPOINT")
+    persistence_db_url: str = Field(default="sqlite:///state/matrix_maintainer.db", alias="PERSISTENCE_DB_URL")
+    scan_schedule_cron: str = Field(default="0 3 * * *", alias="SCAN_SCHEDULE_CRON")
 
     site_base_url: str | None = Field(default=None, alias="SITE_BASE_URL")
     site_title: str = Field(default="Matrix Codex", alias="SITE_TITLE")
