@@ -1,152 +1,174 @@
-# 🚀 Matrix Codex
+# Matrix Codex <img src="status-site/assets/logo.svg" alt="Matrix Codex logo" width="28" />
 
-> **Enterprise orchestration platform for repository maintenance at scale.**
+<div align="left">
 
-`matrix-codex` is the central controller for managing maintenance across many repositories.  
-It discovers repositories, plans operations, dispatches worker runs, collects outcomes, and publishes status.
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automation-2088FF?logo=githubactions&logoColor=white)
+![Status](https://img.shields.io/badge/Mode-Controller%20%2B%20Workers-6f42c1)
+![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen)
 
----
+</div>
 
-## ✨ What You Get
-
-- 🧭 **Central Control Plane**: one place to operate all managed repositories.
-- 🤖 **Codex-Driven Operations**: reusable operation profiles for maintenance, linting, test repair, and upgrades.
-- 🔁 **Worker-Based Execution**: each target repository runs changes in its own CI context (safer, isolated).
-- 📊 **Status & Observability**: API + dashboard for repo health and action history.
-- 🧾 **Auditability**: JSON state artifacts and workflow logs for traceability.
+**Matrix Codex** is an autonomous repository-maintenance control plane for the Agent‑Matrix ecosystem.
+It scans repo health, plans maintenance work, applies governance and budget checks, dispatches worker runs, and publishes status artifacts.
 
 ---
 
-## 🏗️ Architecture Overview
+## ✨ What this project does
 
-`matrix-codex` follows a controller/worker model:
-
-1. **Controller** (this repo)
-   - Reads repo inventory (`config/repositories.yml`)
-   - Selects operation and target repos
-   - Dispatches target worker workflows
-   - Aggregates results
-
-2. **Worker** (in each target repo)
-   - Executes operation in local repo context
-   - Runs validation/tests
-   - Commits and opens PR when needed
-
-3. **Reporter / Dashboard**
-   - Publishes status snapshots
-   - Exposes API (`/status`, `/event`, `/ws`)
-   - Renders live status UI
+- 🧭 **Discovers repositories** and keeps an inventory.
+- 🩺 **Scans health signals** (CI/test/dependency/lint indicators).
+- 🧠 **Builds maintenance tasks** from issues with policy-aware defaults.
+- 🛡️ **Applies governance checks** (risk, allowed paths, PR-only boundaries).
+- 🚀 **Dispatches worker workflows** into target repositories.
+- 📊 **Persists and reports outcomes** through APIs + static status site.
 
 ---
 
-## 📁 Repository Structure
+## 🧩 How it works (simple diagram)
 
-```text
-matrix-codex/
-├── matrix_codex/                     # Python controller package
-├── config/repositories.yml           # Repo inventory + profiles
-├── scripts/                          # Dispatch/report helper scripts
-├── .github/workflows/                # Orchestrator + validation workflows
-├── target-repo-template/             # Worker template for managed repos
-├── apps/backend/                     # FastAPI status backend
-├── apps/frontend/                    # Next.js status dashboard
-├── state/                            # Status/history artifacts
-└── docs/                             # Technical documentation
+```mermaid
+flowchart LR
+    A[Repository Inventory] --> B[Health Scanner]
+    B --> C[Task Engine]
+    C --> D[Guardian + Treasury checks]
+    D --> E[GitPilot/Worker Dispatch]
+    E --> F[Events + Run Storage]
+    F --> G[Status API + Dashboard]
 ```
 
+### Runtime loop
+
+1. `scan-health`
+2. `plan-maintenance`
+3. `run-maintenance`
+4. `report-status`
+
+The scheduled orchestrator executes this same sequence daily.
+
 ---
 
-## ⚙️ Quick Start
+## 🏗️ Architecture overview
 
-### 1) Install dependencies
+### Controller plane (this repository)
+
+- `matrix_codex/health_scanner.py` — detection engine
+- `matrix_codex/task_engine.py` — issue → task mapping
+- `matrix_codex/main.py` — orchestration loop
+- `matrix_codex/orchestration/dispatcher.py` — cross-repo workflow dispatch
+- `matrix_codex/storage/models.py` — persistent run/task/event storage
+
+### Service & API
+
+- `apps/backend/main.py` — status/event backend
+- `matrix_codex/api/routes.py` — maintainer API routes (`/maintainer/*`)
+
+### Worker side
+
+- `.github/workflows/matrix-maintainer-orchestrator.yml` — controller scheduler
+- `matrix_codex/worker_templates/matrix-maintainer.yml` — target repo worker template
+
+---
+
+## ⚙️ Installation
+
+### Option A — recommended
+
+```bash
+make install
+```
+
+### Option B — direct
 
 ```bash
 uv sync
 ```
 
-### 2) Run key commands
+> If your environment blocks external network access, dependency fetch may fail. In that case use the preinstalled environment and run local commands with `PYTHONPATH=.`.
+
+---
+
+## 🔐 Configuration
+
+Main configuration files:
+
+- `config/repositories.yml` → repo catalog + execution profiles
+- `config/policies.yml` → safety boundaries and risk thresholds
+- `config/tasks.yml` → health issue → maintenance task behavior
+
+Useful environment variables:
+
+- `GITHUB_TOKEN` / `CROSS_REPO_TOKEN`
+- `WORKER_WORKFLOW_FILE`
+- `MATRIX_CODEX_EXECUTION_MODE`
+- `GITPILOT_MODE`, `GITPILOT_PROVIDER`
+
+---
+
+## 🚀 Usage
+
+### Daily automation
 
 ```bash
-matrix-codex discover
-matrix-codex run-daily
-matrix-codex check-repo agent-matrix/matrix-hub
-matrix-codex publish-site
+make run-daily
 ```
 
-### 3) Run local status dashboard (optional)
+### Manual step-by-step
 
 ```bash
-docker compose up --build
+matrix-codex scan-health
+matrix-codex plan-maintenance
+matrix-codex run-maintenance
+matrix-codex report-status
 ```
 
-- Frontend: `http://localhost:3000`
-- Backend status API: `http://localhost:8000/status`
-
----
-
-## 🔐 Required Credentials
-
-For orchestration against GitHub:
-
-- `GITHUB_TOKEN` (or)
-- `CROSS_REPO_TOKEN` ✅ recommended for cross-repo dispatch
-
-Token should have access to:
-
-- repository contents
-- Actions (dispatch workflows)
-- pull requests (if opening PRs)
-
-See **docs technical guide** for complete credential setup.
-
----
-
-## 🧪 Operational Workflows
-
-- `orchestrate-agent-matrix.yml`: dispatch operation across fleet
-- `daily-orchestrator.yml`: scheduled daily orchestration
-- `manual-orchestrator.yml`: manual dispatch/local fallback
-- `validate-config.yml`: schema checks for inventory config
-
----
-
-## 📡 Status Dashboard API
-
-FastAPI backend (`apps/backend/main.py`) exposes:
-
-- `GET /health`
-- `GET /status`
-- `POST /event`
-- `WS /ws`
-
-Example event:
+### Local checks
 
 ```bash
-curl -X POST http://localhost:8000/event \
-  -H "Content-Type: application/json" \
-  -d '{"repo":"matrix-ai","status":"running"}'
+make test
 ```
 
 ---
 
-## 🧰 Best Practices
+## 🧪 Developer commands
 
-- ✅ Keep controller logic centralized, execution decentralized.
-- ✅ Prefer PR-based changes over direct pushes.
-- ✅ Use per-repo profiles for safe defaults.
-- ✅ Roll out to pilot repos first, then scale.
-- ✅ Track every run with artifacts and dashboard history.
+```bash
+make install
+make test
+make lint
+make build-site
+```
+
+---
+
+## 📡 Status and observability
+
+- API health: `GET /health`
+- Controller status: `GET /status`
+- Maintainer records: `/maintainer/runs`, `/maintainer/tasks`, `/maintainer/events`, `/maintainer/health_scans`
+- WebSocket stream: `WS /ws`
 
 ---
 
 ## 📚 Documentation
 
-- **Technical guide**: `docs/technical-guide.md`
-- Architecture notes: `docs/architecture.md`
-- Governance and operations docs: `docs/`
+- `docs/technical-guide.md` — technical setup and internals
+- `docs/architecture.md` — architecture details
+- `docs/ai-maintainer-guide.md` — AI handoff + maintenance playbook
+- `docs/usage.md` — quick usage guide
 
 ---
 
-## 🤝 Compatibility
+## 🤝 Contributing
 
-`matrix-codex` is the supported CLI package and command name.
+1. Create a branch.
+2. Keep changes small and policy-safe.
+3. Run tests and include results in PR notes.
+4. Never push directly to `main`.
+
+---
+
+## 📄 License
+
+Apache-2.0

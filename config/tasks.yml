@@ -1,0 +1,15 @@
+defaults:
+  allowed_paths:
+    - tests/**
+    - pyproject.toml
+    - requirements*.txt
+
+repositories:
+  agent-matrix/matrix-ai:
+    allowed_paths:
+      - tests/**
+      - matrix_ai/**
+  agent-matrix/matrix-guardian:
+    allowed_paths:
+      - tests/**
+      - policy/**

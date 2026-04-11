@@ -1,0 +1,19 @@
+policies:
+  default:
+    max_files: 10
+    max_diff_lines: 500
+    allowed_paths:
+      - tests/**
+      - requirements*.txt
+      - pyproject.toml
+    require_pr: true
+    forbid_direct_main_push: true
+    risk_threshold: medium
+  high_risk:
+    max_files: 5
+    max_diff_lines: 200
+    allowed_paths:
+      - tests/**
+    require_pr: true
+    require_human_approval: true
+    risk_threshold: low
