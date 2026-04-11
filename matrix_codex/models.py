@@ -38,6 +38,23 @@ class ExecutionResult(BaseModel):
         return self.return_code == 0
 
 
+class HealthIssue(BaseModel):
+    repo: str
+    issue_type: str
+    details: str
+    severity: str = "medium"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class MaintenanceTask(BaseModel):
+    repo: str
+    issue_type: str
+    task_type: str
+    risk_level: str = "medium"
+    allowed_paths: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class RepoHealthReport(BaseModel):
     repo: RepoRef
     generated_at: str = Field(default_factory=utc_now)
@@ -51,6 +68,9 @@ class RepoHealthReport(BaseModel):
     install_ok: bool = False
     test_ok: bool = False
     start_ok: bool = False
+    tests_failing: bool = False
+    dependency_outdated: bool = False
+    lint_errors: int = 0
     fix_attempts: int = 0
     changed_files: list[str] = Field(default_factory=list)
     checks: list[StandardCheck] = Field(default_factory=list)
@@ -60,7 +80,6 @@ class RepoHealthReport(BaseModel):
     pr_url: str | None = None
     notes: list[str] = Field(default_factory=list)
 
-    # Matrix Codex orchestration fields.
     controller_run_id: str | None = None
     worker_run_id: str | None = None
     worker_url: str | None = None
