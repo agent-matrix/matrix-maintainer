@@ -43,6 +43,7 @@ include = ["matrix_codex*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+pythonpath = ["."]
 
 [dependency-groups]
 dev = [

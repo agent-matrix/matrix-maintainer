@@ -1,0 +1,30 @@
+## Summary
+
+## Type of change
+
+- [ ] feat
+- [ ] fix
+- [ ] chore
+- [ ] docs
+- [ ] refactor
+- [ ] test
+
+## Alive-system surface
+
+- [ ] Adds/updates a health endpoint or check
+- [ ] Adds/updates emitted or consumed events
+- [ ] Adds/updates governance metadata (risk, permissions, approvals)
+- [ ] Adds/updates economics metadata (cost, budget)
+- [ ] None of the above
+
+## Test plan
+
+- [ ] Unit tests pass locally
+- [ ] Lint passes locally
+- [ ] Manual smoke check (describe)
+
+## Checklist
+
+- [ ] PR title follows Conventional Commits
+- [ ] `CHANGELOG.md` updated under Unreleased (if user-visible)
+- [ ] No secrets, credentials, or private endpoints committed
