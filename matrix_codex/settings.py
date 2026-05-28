@@ -43,18 +43,53 @@ class Settings(BaseSettings):
     scan_schedule_cron: str = Field(default="0 3 * * *", alias="SCAN_SCHEDULE_CRON")
 
     site_base_url: str | None = Field(default=None, alias="SITE_BASE_URL")
-    site_title: str = Field(default="Matrix Codex", alias="SITE_TITLE")
-    site_description: str = Field(default="Controller dashboard for Matrix Codex orchestration and repository health.", alias="SITE_DESCRIPTION")
+    site_title: str = Field(default="Matrix Maintainer", alias="SITE_TITLE")
+    site_description: str = Field(
+        default="Orchestration control plane for repository and MCP-server maintenance across the Agent-Matrix ecosystem.",
+        alias="SITE_DESCRIPTION",
+    )
 
     allow_autofix_pr: bool = Field(default=True, alias="ALLOW_AUTOFIX_PR")
     allow_direct_push: bool = Field(default=False, alias="ALLOW_DIRECT_PUSH")
     max_autofix_files: int = Field(default=10, alias="MAX_AUTOFIX_FILES")
+
+    # --- SelfRepair adapter (Phase 1) --------------------------------------
+    selfrepair_mode: str = Field(default="auto", alias="SELFREPAIR_MODE")
+    selfrepair_base_url: str | None = Field(default=None, alias="SELFREPAIR_BASE_URL")
+    selfrepair_api_key: str | None = Field(default=None, alias="SELFREPAIR_API_KEY")
+    selfrepair_timeout_seconds: float = Field(default=120.0, alias="SELFREPAIR_TIMEOUT_SECONDS")
+
+    # --- OllaBridge Cloud (the single LLM gateway) -------------------------
+    # All LLM calls -- planner, GitPilot, ad-hoc completions -- route here.
+    # The API key is named after the workspace, e.g. "Matrix-Maintainer".
+    ollabridge_base_url: str = Field(default="https://api.ollabridge.com/v1", alias="OLLABRIDGE_BASE_URL")
+    ollabridge_api_key: str | None = Field(default=None, alias="OLLABRIDGE_API_KEY")
+    ollabridge_model: str = Field(default="qwen2.5:7b", alias="OLLABRIDGE_MODEL")
+    ollabridge_timeout_seconds: float = Field(default=120.0, alias="OLLABRIDGE_TIMEOUT_SECONDS")
+    ollabridge_organization: str | None = Field(default=None, alias="OLLABRIDGE_ORGANIZATION")
+
+    # --- MCP server maintenance (Phase 3) ----------------------------------
+    mcp_state_dir: Path = Field(default=Path("state/mcp"), alias="MCP_STATE_DIR")
+    mcp_default_runtime: str = Field(default="python", alias="MCP_DEFAULT_RUNTIME")
+
+    # --- Patch archive (Phase 4) -------------------------------------------
+    patches_state_dir: Path = Field(default=Path("state/patches"), alias="PATCHES_STATE_DIR")
+    patches_github_repo: str = Field(default="agent-matrix/mcp-patches", alias="PATCHES_GITHUB_REPO")
+    patches_github_branch: str = Field(default="main", alias="PATCHES_GITHUB_BRANCH")
+    patches_hf_repo: str | None = Field(default=None, alias="PATCHES_HF_REPO")
+    patches_hf_token: str | None = Field(default=None, alias="PATCHES_HF_TOKEN")
+    patches_r2_bucket: str | None = Field(default=None, alias="PATCHES_R2_BUCKET")
+    patches_r2_endpoint: str | None = Field(default=None, alias="PATCHES_R2_ENDPOINT")
+    patches_r2_access_key: str | None = Field(default=None, alias="PATCHES_R2_ACCESS_KEY")
+    patches_r2_secret_key: str | None = Field(default=None, alias="PATCHES_R2_SECRET_KEY")
 
     def ensure_directories(self) -> None:
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.status_site_dir.mkdir(parents=True, exist_ok=True)
         (self.status_site_dir / "data").mkdir(parents=True, exist_ok=True)
+        self.mcp_state_dir.mkdir(parents=True, exist_ok=True)
+        self.patches_state_dir.mkdir(parents=True, exist_ok=True)
 
 
 @lru_cache(maxsize=1)
