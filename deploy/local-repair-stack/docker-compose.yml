@@ -1,0 +1,116 @@
+# MVP-001 — First-wave local repair stack
+#
+# Brings up the smallest working loop of the Ruslan Magana / Agent-Matrix
+# ecosystem so you can prove, end to end and on one machine:
+#
+#   OllaBridge API key
+#     -> SelfRepair creates repair-plan.json
+#       -> GitPilot generates a patch in dry-run
+#         -> MatrixLab validates the patch
+#           -> Matrix Maintainer records the first maintenance run
+#
+# Layout assumption: the product repositories are checked out as siblings
+# of matrix-maintainer, e.g.
+#
+#   <workspace>/
+#     ollabridge-cloud/
+#     matrixlab/
+#     gitpilot/
+#     SelfRepair/
+#     matrix-maintainer/   <- this file lives in deploy/local-repair-stack/
+#
+# Override any build context with the *_CONTEXT env vars if your checkout
+# differs. Copy .env.example to .env and fill in HF_TOKEN before `up`.
+#
+# Golden rule: only OllaBridge ever sees HF_TOKEN. The other services talk
+# to models exclusively through OllaBridge's OpenAI-compatible API.
+
+name: matrix-first-wave
+
+services:
+  ollabridge-cloud:
+    build:
+      context: ${OLLABRIDGE_CONTEXT:-../../../ollabridge-cloud}
+    image: matrix-first-wave/ollabridge-cloud
+    ports:
+      - "8000:8000"
+    environment:
+      # OllaBridge is the ONLY service that owns provider tokens.
+      HF_TOKEN: ${HF_TOKEN:-}
+      OLLAMBRIDGE_MASTER_KEY: ${OLLAMBRIDGE_MASTER_KEY:-ob_admin_localdev}
+      OLLAMBRIDGE_ENABLE_HF_PROVIDERS: ${OLLAMBRIDGE_ENABLE_HF_PROVIDERS:-true}
+      OLLAMBRIDGE_USAGE_LOG: "true"
+      OLLAMBRIDGE_AUDIT_LOG: "true"
+      OLLAMBRIDGE_DEFAULT_MODEL: code-fast
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  matrixlab:
+    build:
+      context: ${MATRIXLAB_CONTEXT:-../../../matrixlab}
+    image: matrix-first-wave/matrixlab
+    ports:
+      - "8765:8765"
+    environment:
+      # Keep public/local runs safe: stub execution unless explicitly armed.
+      MATRIXLAB_DRY_RUN: ${MATRIXLAB_DRY_RUN:-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8765/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  gitpilot:
+    build:
+      context: ${GITPILOT_CONTEXT:-../../../gitpilot}
+    image: matrix-first-wave/gitpilot
+    ports:
+      - "9000:9000"
+    depends_on:
+      ollabridge-cloud:
+        condition: service_healthy
+      matrixlab:
+        condition: service_healthy
+    environment:
+      GITPILOT_CLIENT_ID: agent-matrix
+      GITPILOT_WORKSPACE_ID: default
+      # No HF_TOKEN here — GitPilot talks to models only via OllaBridge.
+      OPENAI_BASE_URL: http://ollabridge-cloud:8000/v1
+      OPENAI_API_KEY: ${GITPILOT_API_KEY:-ob_test_agentmatrix_xxx}
+      GITPILOT_MODEL_FAST: code-fast
+      GITPILOT_MODEL_CODER: code-coder
+      GITPILOT_MODEL_REVIEWER: code-reviewer
+      GITPILOT_SANDBOX_PROVIDER: matrixlab
+      MATRIXLAB_URL: http://matrixlab:8765
+      MATRIXLAB_TOKEN: ${MATRIXLAB_TOKEN:-dev_matrixlab_token}
+      # First wave: never open a real PR, always dry-run safe.
+      GITPILOT_DRAFT_PR_ENABLED: "false"
+      GITPILOT_DEMO_MODE: "true"
+
+  selfrepair:
+    build:
+      context: ${SELFREPAIR_CONTEXT:-../../../SelfRepair}
+    image: matrix-first-wave/selfrepair
+    ports:
+      - "9100:9100"
+    depends_on:
+      ollabridge-cloud:
+        condition: service_healthy
+      gitpilot:
+        condition: service_started
+      matrixlab:
+        condition: service_healthy
+    environment:
+      SELFREPAIR_CLIENT_ID: agent-matrix
+      SELFREPAIR_WORKSPACE_ID: default
+      SELFREPAIR_CODER_PROVIDER: gitpilot
+      GITPILOT_URL: http://gitpilot:9000
+      SELFREPAIR_SANDBOX_PROVIDER: matrixlab
+      MATRIXLAB_URL: http://matrixlab:8765
+      OPENAI_BASE_URL: http://ollabridge-cloud:8000/v1
+      OPENAI_API_KEY: ${SELFREPAIR_API_KEY:-ob_test_agentmatrix_xxx}
+      SELFREPAIR_PLANNER_MODEL: repo-planner
+      SELFREPAIR_RISK_MODEL: risk-classifier

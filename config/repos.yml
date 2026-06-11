@@ -1,4 +1,8 @@
 repositories:
+  # First repo onboarded to the SelfRepair self-maintenance pilot.
+  - name: agent-matrix/network.matrixhub
+    default_branch: main
+    profile: auto
   - name: agent-matrix/matrix-ai
     default_branch: main
     profile: python-service
