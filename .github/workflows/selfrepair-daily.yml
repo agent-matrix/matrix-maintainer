@@ -1,0 +1,53 @@
+# Agent-Matrix self-maintenance — daily SelfRepair control-plane submitter.
+#
+# Each day this submits a dry-run maintenance request per inventory repo to
+# SelfRepair's control plane (POST /v1/plans). SelfRepair records the request
+# (inbox + notification), runs the health check, and shows the result in its
+# console. Matrix-Maintainer is the *sender*; SelfRepair is the system of record.
+#
+# Pilot scope: only agent-matrix/network.matrixhub (via MM_ONLY). To expand,
+# remove MM_ONLY to cover the whole inventory in config/repos.yml.
+#
+# Required repo secrets:
+#   SELFREPAIR_BASE_URL      e.g. https://ruslanmv-selfrepair.hf.space
+#   SELFREPAIR_INGEST_TOKEN  least-privilege ingest token (NOT HF_TOKEN)
+name: selfrepair-daily-maintenance
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # 06:30 UTC daily
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated repo names to submit (blank = inventory default)"
+        required: false
+        default: "agent-matrix/network.matrixhub"
+      mode:
+        description: "dry_run | draft_pr"
+        required: false
+        default: "dry_run"
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install lightweight deps
+        run: pip install --quiet httpx pyyaml
+
+      - name: Submit daily maintenance requests to SelfRepair
+        env:
+          SELFREPAIR_BASE_URL: ${{ secrets.SELFREPAIR_BASE_URL }}
+          SELFREPAIR_INGEST_TOKEN: ${{ secrets.SELFREPAIR_INGEST_TOKEN }}
+          MATRIX_CODEX_CLIENT_ID: matrix-maintainer
+          MM_ONLY: ${{ github.event.inputs.only || 'agent-matrix/network.matrixhub' }}
+          MM_MODE: ${{ github.event.inputs.mode || 'dry_run' }}
+        run: python scripts/submit_daily_maintenance.py

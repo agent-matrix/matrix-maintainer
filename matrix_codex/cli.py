@@ -116,6 +116,41 @@ def run_daily_cmd() -> None:
     console.print(f"Processed {len(reports)} maintenance tasks")
 
 
+@app.command("submit-maintenance")
+def submit_maintenance_cmd(
+    repo: str = typer.Option("", help="owner/name or URL; omit to submit all inventory repos"),
+    mode: str = typer.Option("dry_run", help="dry_run | draft_pr"),
+    repos_file: str = typer.Option("config/repos.yml", help="Inventory file when --repo is omitted"),
+) -> None:
+    """Submit dry-run maintenance request(s) to SelfRepair's control plane.
+
+    Matrix-Maintainer sends intent; SelfRepair records it (inbox/notification)
+    and runs the health check. Requires SELFREPAIR_INGEST_TOKEN.
+    """
+    from matrix_codex.control_plane import submit_maintenance_request
+
+    if repo:
+        targets = [{"name": repo, "default_branch": "main"}]
+    else:
+        import yaml
+
+        data = yaml.safe_load(Path(repos_file).read_text(encoding="utf-8")) or {}
+        targets = data.get("repositories", []) or []
+
+    results = []
+    for item in targets:
+        name = item.get("name")
+        if not name:
+            continue
+        try:
+            res = submit_maintenance_request(name, branch=item.get("default_branch", "main"), mode=mode)
+            results.append({"repo": name, **res})
+            console.print(f"submitted {name}: job={res.get('job_id')} status={res.get('status')}")
+        except Exception as exc:  # noqa: BLE001 — report and continue per repo
+            console.print(f"[red]failed {name}: {exc}[/red]")
+    console.print_json(data={"submitted": results})
+
+
 @app.command("publish-site")
 def publish_site() -> None:
     settings = get_settings()

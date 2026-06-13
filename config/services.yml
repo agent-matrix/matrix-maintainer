@@ -1,0 +1,41 @@
+# MVP-001 — Agent-Matrix first-client service wiring.
+#
+# Matrix Maintainer is the FIRST CLIENT of the generic products. This file
+# declares where each product lives for the local first-wave stack. Values
+# can be overridden by the matching environment variables (see settings.py
+# and .env.example), which take precedence over these defaults.
+#
+# Golden rule: only the inference service (OllaBridge) holds provider tokens.
+# Matrix Maintainer never sets HF_TOKEN.
+
+services:
+  inference:
+    provider: ollabridge
+    base_url: http://localhost:8000/v1     # OLLABRIDGE_BASE_URL
+    api_key_env: OLLABRIDGE_API_KEY        # ob_test_/ob_live_ client key
+    aliases:
+      planner: repo-planner
+      risk: risk-classifier
+      coder: code-coder
+      reviewer: code-reviewer
+      fast: code-fast
+
+  maintenance:
+    provider: selfrepair
+    url: http://localhost:9100             # SELFREPAIR_BASE_URL
+    mode: dry_run
+
+  coder:
+    provider: gitpilot
+    url: http://localhost:9000             # GITPILOT_URL
+    draft_pr_enabled: false                # first wave: never open a real PR
+
+  sandbox:
+    provider: matrixlab
+    url: http://localhost:8765             # MATRIXLAB_URL
+    profile: python-repair
+
+# The first client identity passed through to every product.
+client:
+  client_id: agent-matrix
+  workspace_id: default

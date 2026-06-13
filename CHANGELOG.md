@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **SelfRepair control-plane sender**: `matrix-codex submit-maintenance` + daily cron submit dry-run maintenance requests (`POST /v1/plans`) per inventory repo (pilot: `agent-matrix/network.matrixhub`); `GitPilotAgent` now calls GitPilot's bearer-gated coder API.
 
 - Standardized repository governance files (SECURITY.md, CODE_OF_CONDUCT.md,
   CODEOWNERS, .editorconfig, .gitattributes) as part of the Agent-Matrix

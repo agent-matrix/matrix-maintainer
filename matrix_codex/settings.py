@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     selfrepair_mode: str = Field(default="auto", alias="SELFREPAIR_MODE")
     selfrepair_base_url: str | None = Field(default=None, alias="SELFREPAIR_BASE_URL")
     selfrepair_api_key: str | None = Field(default=None, alias="SELFREPAIR_API_KEY")
+    # Least-privilege service token for SelfRepair's control-plane intake
+    # (POST /v1/plans). Used by the daily self-maintenance submitter. NOT HF_TOKEN.
+    selfrepair_ingest_token: str | None = Field(default=None, alias="SELFREPAIR_INGEST_TOKEN")
+    matrix_codex_client_id: str = Field(default="matrix-maintainer", alias="MATRIX_CODEX_CLIENT_ID")
     selfrepair_timeout_seconds: float = Field(default=120.0, alias="SELFREPAIR_TIMEOUT_SECONDS")
 
     # --- OllaBridge Cloud (the single LLM gateway) -------------------------
