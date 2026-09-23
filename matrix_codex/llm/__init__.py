@@ -24,6 +24,7 @@ from matrix_codex.llm.ollabridge import (
     OllaBridgeError,
     OllaBridgeUnavailable,
     get_llm_client,
+    merged_subprocess_env,
     openai_compatible_env,
 )
 
@@ -33,5 +34,6 @@ __all__ = [
     "OllaBridgeError",
     "OllaBridgeUnavailable",
     "get_llm_client",
+    "merged_subprocess_env",
     "openai_compatible_env",
 ]
