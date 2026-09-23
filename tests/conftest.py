@@ -43,3 +43,25 @@ def respx_mock():
 
     with _respx.mock(assert_all_called=False) as m:
         yield m
+
+@pytest.fixture()
+def temp_settings(_isolate_env):
+    """Hermetic Settings instance backed by the per-test temp directories."""
+    from matrix_codex.settings import Settings
+
+    settings = Settings()
+    settings.ensure_directories()
+    return settings
+
+
+@pytest.fixture()
+def sample_repo():
+    """Minimal repository reference shared by unit/integration tests."""
+    from matrix_codex.models import RepoRef
+
+    return RepoRef(
+        name="demo",
+        full_name="agent-matrix/demo",
+        clone_url="https://github.com/agent-matrix/demo.git",
+    )
+
