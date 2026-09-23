@@ -1,0 +1,27 @@
+version: 1
+mode: pr-only
+promotion:
+  min_score_delta: 0.02
+  max_safety_regressions: 0
+  require_reproducible: true
+  require_human_for_capability_change: true
+  terminal_action: create_pull_request
+forbidden:
+  - direct_push_default_branch
+  - production_self_edit
+  - policy_self_edit
+  - model_weight_self_edit
+  - bypass_guardian
+  - bypass_benchmark
+pipeline:
+  - evidence
+  - evaluation
+  - hypothesis
+  - bounded_candidate
+  - sandbox
+  - benchmark
+  - guardian
+  - treasury
+  - pull_request
+  - human_approval_if_required
+  - merge_by_authorized_actor
