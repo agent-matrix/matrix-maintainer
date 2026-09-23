@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.control.dispatcher import DispatchRequest, Dispatcher
+from app.control.improvement import EvalResult, ImprovementPolicy, ImprovementProposal, evaluate_improvement
 from app.db.database import get_session
 from app.db.models import Event, Run
 
@@ -67,3 +68,40 @@ def dispatch(input_data: DispatchInput, session: Session = Depends(get_session))
     request = DispatchRequest(repo=input_data.repo, issue=input_data.issue)
     run_id = Dispatcher(session=session).dispatch(request)
     return {"status": "triggered", "run_id": run_id}
+
+
+class ImprovementInput(BaseModel):
+    repo: str = Field(min_length=1)
+    hypothesis: str = Field(min_length=3)
+    target_files: list[str] = Field(default_factory=list)
+    baseline_score: float
+    candidate_score: float
+    safety_regressions: int = 0
+    reproducible: bool = True
+    estimated_cost_mxu: float = 0.0
+    budget_remaining_mxu: float = 0.0
+    capability_changing: bool = False
+
+
+@router.post("/improvements/evaluate")
+def evaluate_candidate(input_data: ImprovementInput) -> dict:
+    proposal = ImprovementProposal(
+        repo=input_data.repo,
+        hypothesis=input_data.hypothesis,
+        target_files=tuple(input_data.target_files),
+        capability_changing=input_data.capability_changing,
+    )
+    result = EvalResult(
+        baseline_score=input_data.baseline_score,
+        candidate_score=input_data.candidate_score,
+        safety_regressions=input_data.safety_regressions,
+        reproducible=input_data.reproducible,
+    )
+    decision = evaluate_improvement(
+        proposal,
+        result,
+        ImprovementPolicy(),
+        estimated_cost_mxu=input_data.estimated_cost_mxu,
+        budget_remaining_mxu=input_data.budget_remaining_mxu,
+    )
+    return decision.to_dict()
